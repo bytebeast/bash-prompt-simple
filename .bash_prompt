@@ -23,7 +23,7 @@
 symbols_on='false'
 
 # Style is either 'straight' or 'curved'.
-style='none'
+style='straight'
 
 # Color options for prompt:
 #
