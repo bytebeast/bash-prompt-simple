@@ -1,0 +1,266 @@
+#!/bin/bash
+#
+#        ..          ..                           .          ..
+#  . uw8"      . uw8"                   oec :    @88>  x .d88"
+#  `t888       `t888                   @88888    %8p    5888r
+#   8888   .    8888   .               8"*88%     .     '888r        .u
+#   9888.z88n   9888.z88n              8b.      .@88u    888r     ud8888.
+#   9888  888e  9888  888e            u888888> ''888e`   888r   :888'8888.
+#   9888  888e  9888  888e             8888r     888e    888r   d888 '88%
+#   9888  888e  9888  888e             8888p     888e    888r   8888.+"
+#   9888  888e  9888  888e       .     *888>     888e    888r   8888l
+#  .8888  888" .8888  888"     .@8c    4888      888&   .888b . '8888c. .+
+#   `%888*%"    `%888*%"      '%888"   '888      r888"  ^*888%   "88888%
+#      "`          "`           ^*      88r       ""      "%       "yp'
+#                                       88>
+#                                       48
+#
+#===============================================================================
+#===============================================================================
+#===============================================================================
+
+# Enable fancy symbols, requires a nerdfont.
+symbols_on='false'
+
+# Style is either 'straight' or 'curved'.
+style='none'
+
+# Color options for prompt:
+#
+#      red
+#      green
+#      yellow
+#      blue
+#      purple
+#      cyan
+#      white
+#      lightblack
+#      lightred
+#      lightgreen
+#      lightyellow
+#      lightblue
+#      lightpurple
+#      lightcyan
+#      white
+#      black
+#
+theme_color_primary='red'
+theme_color_secondary='lightyellow'
+
+# Override prompt symbol icon
+override_prompt_symbol_icon=''
+
+
+#===============================================================================
+#===============================================================================
+#===============================================================================
+if [ "${style}" == 'straight' ]; then
+    open_bracket='['
+    close_bracket=']'
+    multiline_connector_top='┍'
+    multiline_connector_middle='├'
+    muttiline_connector_bottom='└'
+elif [ "${style}" == 'curved' ]; then
+    open_bracket='('
+    close_bracket=')'
+    multiline_connector_top='╭'
+    multiline_connector_middle='├'
+    muttiline_connector_bottom='╰'
+else
+    open_bracket=' '
+    close_bracket=' '
+    multiline_connector_top='┍'
+    multiline_connector_middle='├'
+    muttiline_connector_bottom='└'
+fi
+
+if [ "${symbols_on}" == 'true' ]; then
+    #branch_symbol=' '
+    #branch_symbol=' '
+    branch_symbol=' '
+    kube_symbol='⎈ '
+    python_symbol=' '
+    aws_symbol=' '
+else
+    branch_symbol=''
+    branch_symbol=''
+    kube_symbol=''
+    python_symbol=''
+    aws_symbol=''
+fi
+
+# The various escape codes that we can use to color our prompt.
+          red="\[\033[38;5;001m\]"
+        green="\[\033[38;5;002m\]"
+       yellow="\[\033[38;5;003m\]"
+         blue="\[\033[38;5;004m\]"
+       purple="\[\033[38;5;005m\]"
+         cyan="\[\033[38;5;006m\]"
+        white="\[\033[38;5;007m\]"
+   lightblack="\[\033[38;5;008m\]"
+     lightred="\[\033[38;5;009m\]"
+   lightgreen="\[\033[38;5;010m\]"
+  lightyellow="\[\033[38;5;011m\]"
+    lightblue="\[\033[38;5;012m\]"
+  lightpurple="\[\033[38;5;013m\]"
+    lightcyan="\[\033[38;5;014m\]"
+        white="\[\033[38;5;015m\]"
+        black="\[\033[38;5;016m\]"
+   color_none="\[\e[0m\]"
+
+# Dynamically set prompt.
+case ${theme_color_primary} in
+    red|green|yellow|blue|purple|cyan|white|lightblack|lightred|lightgreen|lightyellow|lightblue|lightpurple|lightcyan|white|black) color_primary="${!theme_color_primary}";;
+    *) color_primary="${blue}"
+esac
+case ${theme_color_secondary} in
+    red|green|yellow|blue|purple|cyan|white|lightblack|lightred|lightgreen|lightyellow|lightblue|lightpurple|lightcyan|white|black) color_secondary="${!theme_color_secondary}";;
+    *) color_secondary="${lightblue}";;
+esac
+
+# Set prompt symbol icon.
+os_sys_name="$(uname -s)"
+if [ "${symbols_on}" == 'true' ]; then
+    if [ "${override_prompt_symbol_icon}" ]; then
+        prompt_symbol_icon="${override_prompt_symbol_icon}"
+    else
+    	case ${os_sys_name} in
+    	    "Linux") prompt_symbol_icon='';;
+    	    "Darwin") prompt_symbol_icon='';;
+    	    *) prompt_symbol_icon='';;
+    	esac
+    fi
+else
+    prompt_symbol_icon='\$'    
+fi
+
+# Determine git branch name.
+function parse_git_branch {
+    git branch --no-color 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' | tr -d "()"
+}
+
+# Determine mercurial branch name. 
+function parse_hg_branch {
+    hg branch 2> /dev/null | awk '{print $1}'
+}
+
+# Determine the branch/state information for this git repository.
+function set_git_branch {
+    # Get the name of the branch.
+    branch=$(parse_git_branch)
+
+    # If not git then maybe mercurial
+    if [ "${branch}" == "" ]; then
+        branch=$(parse_hg_branch)
+        if [ "${branch}" == "" ]; then
+            branch=""
+        else
+            branch="${color_primary}${open_bracket}${color_none}${color_secondary}${branch_symbol}${branch}${color_none}${color_primary}${close_bracket}${color_none}"
+        fi
+    else
+        branch="${color_primary}${open_bracket}${color_none}${color_secondary}${branch_symbol}${branch}${color_none}${color_primary}${close_bracket}${color_none}"
+    fi
+}
+
+function set_aws_profile {
+    # get aws profile.
+    if [ "${aws_profile}" ]; then
+        profile="${aws_profile}"
+    elif [ "${aws_default_profile}" ]; then
+        profile="${aws_default_profile}"
+    else
+        profile=""
+    fi
+
+    if [ "${aws_region}" ]; then
+        region="${aws_region}"
+    elif [ "${aws_default_region}" ]; then
+        region="${aws_default_region}"
+    else
+        region=""
+    fi
+
+    if [ "${region}" ]; then
+        region_section="${color_primary}/${color_none}${color_secondary}${region}${color_none}"
+    else
+        region_section=""
+    fi
+
+    if [ "${profile}" ]; then
+        aws_prof="${color_primary}${open_bracket}${color_none}${color_secondary}${aws_symbol}${profile}${color_none}${region_section}${color_primary}${close_bracket}${color_none}"
+    else
+        aws_prof=""
+    fi
+}
+
+function set_k8s_context {
+    # get the k8s current context.
+    if [ "$(which kubectl)" ]; then
+        current_context="$(kubectl config view -o=jsonpath='{.current-context}')"
+    else
+        current_context=""
+    fi
+
+    # set the k8s current context.
+    if [ "${current_context}" ]; then
+        k8s_ns=$(kubectl config view -o=jsonpath="{.contexts[?(@.name==\"${current_context}\")].context.namespace}")
+        k8s_context_ns="${color_primary}${open_bracket}${color_none}${color_secondary}${kube_symbol}${current_context}${color_none}${color_primary}/${color_none}${color_secondary}${k8s_ns:-default}${color_none}${color_primary}${close_bracket}${color_none}"
+    else
+        k8s_context_ns=""
+    fi
+}
+
+# Color depends on exit status of last command.
+function set_prompt_symbol {
+    if [ "$1" -eq "0" ]; then
+        prompt_symbol="${color_primary}${open_bracket}${color_none}${color_primary}${prompt_symbol_icon}${color_none}${color_primary}${close_bracket}${color_none}"
+    else
+        prompt_symbol="${color_primary}${open_bracket}${color_none}${color_secondary}${prompt_symbol_icon}${color_none}${color_primary}${close_bracket}${color_none}"
+    fi
+}
+
+# Determine active python virtualenv details.
+function set_virtualenv {
+    if [ -z "$virtual_env" ]; then
+      python_virtualenv=""
+    else
+      python_virtualenv="${color_primary}${open_bracket}${color_none}${color_secondary}${python_symbol}$(basename \"$virtual_env\")${color_none}${color_primary}${close_bracket}${color_none}"
+    fi
+}
+
+
+# Set the full bash prompt.
+function set_bash_prompt {
+
+    # Set the prompt_symbol variable. we do this first so we don't lose the
+    # Return value of the last command.
+    set_prompt_symbol $?
+
+    # Set the python_virtualenv variable.
+    set_virtualenv
+
+    # Set the branch variable.
+    set_git_branch
+
+    # Set kube context.
+    set_k8s_context
+
+    # Set aws profile.
+    set_aws_profile
+
+    if [ "${branch}" ] || [ "${k8s_context_ns}" ] ||  [ "${aws_prof}" ] || [ "${python_virtualenv}" ]; then
+       prefix_row_three="\\n${multiline_connector_top}"
+       prefix_row_two="\\n${multiline_connector_middle}"
+    else
+       prefix_row_three=""
+       prefix_row_two="\\n${multiline_connector_top}"
+    fi
+    prefix_row_one="\\n${muttiline_connector_bottom}"
+
+    # Set the bash prompt variable.
+    PS1="${color_primary}${prefix_row_three}${color_none}${branch}${k8s_context_ns}${aws_prof}${python_virtualenv}${color_primary}${prefix_row_two}${open_bracket}${color_none}${color_secondary}\u${color_none}${color_primary}@${color_none}${color_secondary}\h${color_none}${color_primary}${close_bracket}${open_bracket}${color_none}${color_secondary}\w${color_none}${color_primary}${close_bracket}${color_none}${color_primary}${prefix_row_one}${color_none}${prompt_symbol} "
+}
+
+# Tell bash to execute this function just before displaying its prompt.
+PROMPT_COMMAND=set_bash_prompt
+
