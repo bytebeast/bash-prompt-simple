@@ -164,18 +164,18 @@ function set_git_branch {
 
 function set_aws_profile {
     # get aws profile.
-    if [ "${aws_profile}" ]; then
-        profile="${aws_profile}"
-    elif [ "${aws_default_profile}" ]; then
-        profile="${aws_default_profile}"
+    if [ "${AWS_PROFILE}" ]; then
+        profile="${AWS_PROFILE}"
+    elif [ "${AWS_DEFAULT_PROFILE}" ]; then
+        profile="${AWS_DEFAULT_PROFILE}"
     else
         profile=""
     fi
 
-    if [ "${aws_region}" ]; then
-        region="${aws_region}"
-    elif [ "${aws_default_region}" ]; then
-        region="${aws_default_region}"
+    if [ "${AWS_REGION}" ]; then
+        region="${AWS_REGION}"
+    elif [ "${AWS_DEFAULT_REGION}" ]; then
+        region="${AWS_DEFAULT_REGION}"
     else
         region=""
     fi
@@ -221,10 +221,10 @@ function set_prompt_symbol {
 
 # Determine active python virtualenv details.
 function set_virtualenv {
-    if [ -z "$virtual_env" ]; then
+    if [ -z "$VIRTUAL_ENV" ]; then
       python_virtualenv=""
     else
-      python_virtualenv="${color_primary}${open_bracket}${color_none}${color_secondary}${python_symbol}$(basename \"$virtual_env\")${color_none}${color_primary}${close_bracket}${color_none}"
+      python_virtualenv="${color_primary}${open_bracket}${color_none}${color_secondary}${python_symbol}$(basename \"$VIRTUAL_ENV\")${color_none}${color_primary}${close_bracket}${color_none}"
     fi
 }
 
