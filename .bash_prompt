@@ -213,9 +213,9 @@ function set_k8s_context {
 # Color depends on exit status of last command.
 function set_prompt_symbol {
     if [ "$1" -eq "0" ]; then
-        prompt_symbol="${color_primary}${open_bracket}${color_none}${color_primary}${prompt_symbol_icon}${color_none}${color_primary}${close_bracket}${color_none}"
-    else
         prompt_symbol="${color_primary}${open_bracket}${color_none}${color_secondary}${prompt_symbol_icon}${color_none}${color_primary}${close_bracket}${color_none}"
+    else
+        prompt_symbol="${color_primary}${open_bracket}${color_none}${color_primary}${prompt_symbol_icon}${color_none}${color_primary}${close_bracket}${color_none}"
     fi
 }
 
